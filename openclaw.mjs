@@ -39,6 +39,9 @@ const hasAnyEntryBuild = async () => {
   return false;
 };
 
+const hasTsdownBuildTool = async () =>
+  (await exists("node_modules/.bin/tsdown")) || (await exists("node_modules/.bin/tsdown.cmd"));
+
 const hasCommand = (command, args = ["--version"]) => {
   const result = spawnSync(command, args, { stdio: "ignore", shell: false });
   return !result.error;
@@ -92,8 +95,20 @@ const ensureDistBuild = async () => {
     );
   }
 
-  if (!(await exists("node_modules"))) {
-    runOrThrow(runner, ["install", "--frozen-lockfile"], "dependency installation failed.");
+  if (!(await exists("node_modules")) || !(await hasTsdownBuildTool())) {
+    runOrThrow(
+      runner,
+      ["install", "--frozen-lockfile", "--prod=false"],
+      "dependency installation failed.",
+    );
+  }
+
+  if (!(await hasTsdownBuildTool())) {
+    throw new Error(
+      'openclaw: build tool "tsdown" is unavailable after dependency install.\n' +
+        "Try running manually:\n" +
+        `  ${runner.displayName} install --frozen-lockfile --prod=false`,
+    );
   }
 
   runOrThrow(runner, ["exec", "tsdown", "--no-clean"], "build failed.");
