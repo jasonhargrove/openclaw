@@ -90,8 +90,8 @@ const ensureDistBuild = async () => {
       "openclaw: dist build output is missing and no package manager was found.\n" +
         "Install pnpm (https://pnpm.io/installation) or enable Corepack, then run:\n" +
         "  corepack enable\n" +
-        "  corepack pnpm install --frozen-lockfile\n" +
-        "  corepack pnpm exec tsdown --no-clean",
+        "  corepack pnpm install --frozen-lockfile --prod=false\n" +
+        "  corepack pnpm build",
     );
   }
 
@@ -111,14 +111,14 @@ const ensureDistBuild = async () => {
     );
   }
 
-  runOrThrow(runner, ["exec", "tsdown", "--no-clean"], "build failed.");
+  runOrThrow(runner, ["build"], "build failed.");
 
   if (!(await hasAnyEntryBuild())) {
     throw new Error(
       "openclaw: bootstrap completed but dist/entry.(m)js is still missing.\n" +
         "Try a clean build manually and rerun:\n" +
-        `  ${runner.displayName} install --frozen-lockfile\n` +
-        `  ${runner.displayName} exec tsdown --no-clean`,
+        `  ${runner.displayName} install --frozen-lockfile --prod=false\n` +
+        `  ${runner.displayName} build`,
     );
   }
 };
